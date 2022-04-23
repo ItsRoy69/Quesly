@@ -842,5 +842,18 @@ router.post("/getUser", async (req, res) => {
   }
 });
 
+router.patch("/updateSpace/:id", async (req, res) => {
+  const _id = req.params.id;
+  try {
+    const updateSpace = await Spaces.findByIdAndUpdate(_id, req.body, {
+      new: true,
+    });
+    res.status(200).json({ updateSpace, success: true });
+  } catch (e) {
+    res.status(500);
+    res.json({ message: `Could not update Space --> ${e}` });
+  }
+});
+
 
 module.exports = router;
