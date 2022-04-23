@@ -125,6 +125,28 @@ router.post("/post-question", async (req, res) => {
   }
 });
 
+router.post("/post-answer", async (req, res) => {
+  try {
+    const { id, answer, username, profilePic } = req.body;
+
+    if (!id || !answer || !username || !profilePic) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+
+    const question = await Queries.findOne({ _id: id });
+
+    const Answer = await question.answerQuestion(answer, username, profilePic);
+
+    if (question) {
+      res.json(question);
+    } else {
+      res.send("Couldnt Post Answer!");
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
 
 router.get("/logout", auth, async (req, res) => {
   try {
@@ -237,6 +259,139 @@ router.get("/get-trending-queries", async (req, res) => {
     res.send(e);
   }
 });
+
+router.post("/post-upvote", async (req, res) => {
+  const { id, username } = req.body;
+
+  if (!id || !username) {
+    return res.status(422).json({ error: "Please fill all the fields." });
+  }
+  try {
+    const upvoteQuestion = await Queries.findOne({ _id: id });
+
+    const upvoted = await upvoteQuestion.upvote(username);
+
+    if (upvoted) {
+      res.json({ message: "Upvoted Successfully!" });
+    } else {
+      res.json({ message: "Could not upvote!" });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/post-answer-upvote", async (req, res) => {
+  const { qid, aid, username } = req.body;
+
+  if (!username || !qid || !aid) {
+    return res.status(422).json({ error: "Please fill all the fields." });
+  }
+  try {
+    const upvoteQuestion = await Queries.findById({ _id: qid });
+    const upvoted = await upvoteQuestion.upvotingAnswer(username, aid);
+
+    if (upvoted) {
+      res.json({ message: "Upvoted Successfully!" });
+    } else {
+      res.json({ message: "Could not upvote!" });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/remove-answer-upvote", async (req, res) => {
+  const { qid, aid, username } = req.body;
+
+  if (!username || !qid) {
+    return res.status(422).json({ error: "Please fill all the fields." });
+  }
+  try {
+    const upvoteQuestion = await Queries.findById({ _id: qid });
+    const removeUpvote = await upvoteQuestion.removeUpvoteAnswer(username, aid);
+
+    if (removeUpvote) {
+      res.json({ message: "Upvote removed Successfully!" });
+    } else {
+      res.json({ message: "Could not remove upvote!" });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/post-downvote", async (req, res) => {
+  const { id, username } = req.body;
+
+  if (!username || !id) {
+    return res.status(422).json({ error: "Please fill all the fields." });
+  }
+  try {
+    const downvoteQuestion = await Queries.findOne({ _id: id });
+
+    const downvoted = await downvoteQuestion.downvote(username);
+
+    if (downvoted) {
+      res.json({ message: "Downvoted Successfully!" });
+    } else {
+      res.json({ message: "Already Downvoted!" });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/post-answer-downvote", async (req, res) => {
+  const { qid, aid, username } = req.body;
+
+  if (!username || !qid || !aid) {
+    return res.status(422).json({ error: "Please fill all the fields." });
+  }
+  try {
+    const downvoteQuestion = await Queries.findById({ _id: qid });
+
+    const downvoted = await downvoteQuestion.downvotingAnswer(username, aid);
+
+    if (downvoted) {
+      res.json({ message: "Downvoted Successfully!" });
+    } else {
+      res.json({ message: "Could not downvote!" });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/remove-answer-downvote", async (req, res) => {
+  const { qid, aid, username } = req.body;
+
+  if (!username || !qid) {
+    return res.status(422).json({ error: "Please fill all the fields." });
+  }
+  try {
+    const downvoteQuestion = await Queries.findById({ _id: qid });
+    const removeDownvote = await downvoteQuestion.removeDownvoteAnswer(
+      username,
+      aid
+    );
+
+    if (removeDownvote) {
+      res.json({ message: "Downvote removed Successfully!" });
+    } else {
+      res.json({ message: "Could not remove downvote!" });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
 
 
 router.post("/getUser", async (req, res) => {
