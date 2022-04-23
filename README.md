@@ -23,6 +23,8 @@ The users get the opportunity to create their own profiles on the web app by ent
 Website Link:
 <br/> -->
 Youtube Link: https://youtu.be/WrnKeCbDY_w
+<br/>
+Hosted Url: https://quesly.netlify.app/
 <!-- <br/>
 Presentation Link: -->
 ## Architecture of the web app
