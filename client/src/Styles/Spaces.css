@@ -1,0 +1,55 @@
+/* #fluidWrapper{
+    background-image: url("https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.pinterest.com%2Fpin%2F332773859941431543%2F&psig=AOvVaw1s4fuclc8Z_MCj_9sxFIlP&ust=1634840669752000&source=images&cd=vfe&ved=0CAsQjRxqFwoTCLiXh53O2fMCFQAAAAAdAAAAABAO");
+} */
+
+#user_img_container {
+  width: 3rem;
+  height: 3rem;
+  background: #fff;
+  border-radius: 50%;
+
+}
+
+#user_img {
+  width: 100%;
+}
+
+.add-icon {
+  /* margin-left: -2.5rem; */
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 10;
+  color: #3a95f0;
+  animation: fadeInAnimation ease 0.5s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  font-size: 1.5rem;
+  margin-right: 1rem;
+}
+
+.delete-icon {
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 10;
+  color: #3a95f0;
+  animation: fadeInAnimation ease 0.5s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+  font-size: 1.5rem;
+  margin-right: 1rem;
+}
+
+.background-spaces{
+  animation: fadeInAnimation ease 0.5s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeInAnimation {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+     }
+}
