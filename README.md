@@ -12,7 +12,11 @@
 
 ## What is Quesly ? 🤔
 
-Quesly is a website where one can solve their queries whenever they want. They can also slide into people's inbox to chat about their problems and solve it.
+Quesly is the name of the community web app developed with the ardent focus of solving a problem. When users post questions, there is a good chance that another member of the community will answer the question, and that answer will be there for anyone else who thinks up the same question. Online communities can get crowded with members who are eager to help others. Quesly is developed with vision of connecting the users.
+
+It is created with using React.js as the client side and Express.js , Node.js on the server side with using MongoDB as the Database and all API's are created manually with Express.js. Socket.io was used
+
+The users get the opportunity to create their own profiles on the web app by entering the details during Sign Up. The details includes certain information like name, e-mail, and also gets the opportunity to select interested categories and personal avatars. The user gets a unique username after the registration. As soon as the user lands on the Home page, the user gets to search, post, scroll questions of his interested categories which he had previously selected. Users get the freedom to ask questions, follow other users, reply. Quesly offers users features like upvote or downvote the answers according to wish. Spaces, the most distinct part of the website allows users to add members, whom they follow, to form communities and initiate productive conversations and form networks.
 
 ## Important Links!
 <!-- 
