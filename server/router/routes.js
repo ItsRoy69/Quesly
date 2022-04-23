@@ -392,7 +392,442 @@ router.post("/remove-answer-downvote", async (req, res) => {
   }
 });
 
+router.post("/follow-user", async (req, res) => {
+  const { user, follow_user } = req.body;
 
+  if (!user || !follow_user) {
+    return res.status(422).json({ error: "Please fill all the fields." });
+  }
+  try {
+    const findUser = await User.findOne({ username: user });
+    const findFollowUser = await User.findOne({ username: follow_user });
+
+    const followingUsers = findUser.following.find((elem) => {
+      return elem.username === follow_user;
+    });
+
+    const followedUser = findFollowUser.followers.find((elem) => {
+      return elem.username === user;
+    });
+
+
+    if (!followingUsers && !followedUser && user !== follow_user) {
+      const followUser = await findUser.follow(follow_user);
+
+      const followerUser = await findFollowUser.followingUser(user);
+
+      res.status(201).json({ message: "User Followed Successfully!" });
+    } else {
+      res.status(200).json({ message: "User Already Followed!" });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/unfollow-user", async (req, res) => {
+  const { user, unfollow_user } = req.body;
+
+  if (!user || !unfollow_user) {
+    return res.status(422).json({ error: "Please fill all the fields." });
+  }
+  try {
+    const findUser = await User.findOne({ username: user });
+    const findFollowUser = await User.findOne({ username: unfollow_user });
+
+    const followingUsers = findUser.following.find((elem) => {
+      return elem.username === unfollow_user;
+    });
+
+    const followedUser = findFollowUser.followers.find((elem) => {
+      return elem.username === user;
+    });
+
+
+    if (followingUsers && followedUser && user !== unfollow_user) {
+      const unfollowUser = await findUser.unfollow(unfollow_user);
+
+      const unfollowerUser = await findFollowUser.unfollowingUser(user);
+
+      res.status(201).json({ message: "User Unfollowed Successfully!" });
+    } else {
+      res.status(200).json({ message: "You Don't Follow the User!" });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/delete-answer", answer, async (req, res) => {
+  try {
+    const { aid } = req.body;
+
+    if (!aid) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+
+    req.Answer.answers = req.Answer.answers.filter((currElem) => {
+      return currElem._id != req.id;
+    });
+    res.status(200).send({ message: "Answer Deleted Successfully!" });
+    await req.Answer.save();
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/getQueries-by-user", async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+
+    const QueriesByUser = await Queries.find({ username: username });
+
+    res.send(QueriesByUser);
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/getAnswers-by-user", getAnswers, async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+
+    req.Answer.answers = req.Answer.answers.filter((currElem) => {
+      return currElem.username === req.username;
+    });
+
+    res.send(req.Answer.answers);
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/getAnswers", async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+
+    const question = await Queries.findOne({ _id: id });
+
+    res.send(question.answers);
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+
+
+router.post("/get-visiting-user", async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+    const UserFound = await User.findOne({ username: username });
+
+    if (UserFound) {
+      res.status(200).send(UserFound);
+    } else {
+      res.status(404).send("User Not Found.");
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/create-space", async (req, res) => {
+  try {
+    const { admin, members, spaceName } = req.body;
+
+    if (!admin || !members) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+    const userFound = await User.findOne({ username: admin });
+
+    const saveSpaces = await userFound.EmbedSpaces(spaceName);
+
+    if (userFound) {
+      const space = new Spaces({
+        admin,
+        members,
+        spaceName,
+      });
+      const createdSpace = await space.save();
+      res.status(200).send(createdSpace);
+    } else {
+      res.status(404).send("User Not Found!");
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/remove-member", async (req, res) => {
+  try {
+    const { id, admin, members } = req.body;
+
+    if (!admin || !members || !id) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+    const spaceFound = await Spaces.findOne({ _id: id });
+
+    const memberExists = members.map((member) => {
+      return spaceFound.members.includes(member);
+    });
+
+    const user = members.find((username) => {
+      return username === admin;
+    });
+
+    if (memberExists.toString() === "false") {
+      res
+        .status(400)
+        .json({ message: "Requested User is not a part of your Space." });
+    } else if (user) {
+      res.status(400).json({
+        message: "Admin cannot remove himself, delete group instead.",
+      });
+    } else {
+      if (spaceFound.admin === admin) {
+        const editSpace = await spaceFound.DeleteMember(members);
+        res.status(200).send(editSpace);
+      } else {
+        res.status(404).json({ message: "You are not the admin." });
+      }
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({ message: "Could not find requested Space." });
+  }
+});
+
+router.post("/add-member", async (req, res) => {
+  try {
+    const { id, admin, members } = req.body;
+
+    if (!admin || !members || !id) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+    const spaceFound = await Spaces.findOne({ _id: id });
+
+    const memberExists = members.map((member) => {
+      return spaceFound.members.includes(member);
+    });
+
+    if (memberExists.toString() === "true") {
+      res
+        .status(400)
+        .json({ message: "Requested User is already a part of your Space." });
+    } else {
+      if (spaceFound.admin === admin) {
+        const editSpace = await spaceFound.AddMember(members);
+        res.status(200).send(editSpace);
+      } else {
+        res.status(404).json({ message: "You are not the admin." });
+      }
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(`Could not find requested Space.`);
+  }
+});
+
+router.post("/send-message", async (req, res) => {
+  try {
+    const { id, username, message } = req.body;
+
+    if (!username || !message) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+
+    const spaceFound = await Spaces.findOne({ _id: id });
+
+    const spacename = spaceFound.spaceName;
+
+    if (spaceFound) {
+      const embedMessages = await spaceFound.PostMessages(
+        username,
+        message,
+        spacename
+      );
+      return res.status(200).send(embedMessages);
+    } else {
+      return res.status(404).send(`Could not find requested Space.`);
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/get-users-spaces", async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+
+    const Space = await Spaces.find();
+
+    const SpaceFound = Space.map((elem) => {
+      if (elem.members.includes(username)) {
+        return elem;
+      } else {
+        return null;
+      }
+    });
+
+    const filteredSpaceFound = SpaceFound.filter((elem) => {
+      return elem !== null;
+    });
+
+    if (SpaceFound) {
+      res.send(filteredSpaceFound);
+    } else {
+      res.json("You are not a part of any Space.");
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/search-user", async (req, res) => {
+  try {
+    const { search } = req.body;
+
+    if (!search) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+
+    const users = await User.find();
+
+    const newUsers = users.map((user) => {
+      if (user.username) {
+        if (!user.username.search(search.toLowerCase())) {
+          return user;
+        }
+      }
+    });
+
+    if (newUsers) {
+      res.send(newUsers);
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/search-space", async (req, res) => {
+  try {
+    const { search, username } = req.body;
+
+    if (!search) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+
+    const Space = await Spaces.find();
+
+    const SpaceFound = Space.map((elem) => {
+      if (elem.members.includes(username)) {
+        return elem;
+      } else {
+        return null;
+      }
+    });
+
+    const filteredSpaceFound = SpaceFound.filter((elem) => {
+      return elem !== null;
+    });
+
+    const newSpaces = filteredSpaceFound.map((space) => {
+      if (space.spaceName.toLowerCase()) {
+        if (!space.spaceName.toLowerCase().search(search)) {
+          return space;
+        }
+      }
+    });
+
+    const filteredNewSpaces = newSpaces.filter((space) => {
+      return space != null;
+    });
+
+    if (newSpaces) {
+      res.send(filteredNewSpaces);
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send(e);
+  }
+});
+
+router.post("/login-with-google", async (req, res) => {
+  try {
+    const logEmail = req.body.email;
+
+    if (!logEmail) {
+      return res.status(422).json({ error: "Please fill all the fields." });
+    }
+
+    const user = await User.findOne({ email: logEmail });
+    const userEmail = await User.findOne({ email: logEmail });
+
+    const token = await userEmail.generateAuthToken();
+
+    res.cookie("jwt", token, {
+      expires: new Date(Date.now() + 60000000),
+      httpOnly: true,
+    });
+
+
+    if (user) {
+      res.json({
+        message: "Logged In Successfully!",
+        token: token,
+        success: true,
+        user: user,
+      });
+    } else {
+      res.status(400).json({ message: "Invalid login credentials" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Invalid login credentials" });
+  }
+});
+
+router.patch("/updateUser/:id", async (req, res) => {
+  const _id = req.params.id;
+  try {
+    const updateUser = await User.findByIdAndUpdate(_id, req.body, {
+      new: true,
+    });
+    res.status(200).json({ updateUser, success: true });
+  } catch (e) {
+    res.status(500);
+    res.json({ message: `Could not update user --> ${e}` });
+  }
+});
 
 router.post("/getUser", async (req, res) => {
   try{
